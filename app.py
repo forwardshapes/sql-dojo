@@ -16,8 +16,7 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 
 @app.route('/')
 def index():
-    # Redirect to exercise 1 by default
-    return redirect(url_for('exercise', exercise_id=1))
+    return render_template('index.html')
 
 @app.route('/exercise/<int:exercise_id>')
 def exercise(exercise_id):
