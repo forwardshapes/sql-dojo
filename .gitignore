@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# claude code
+.ipynb_checkpoints/
+*.pyc
+.venv/

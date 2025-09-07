@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/C:\\Users\\andre\\Documents\\SQL-DOJO/**)",
+      "Read(/C:\\Users\\andre\\Documents\\SQL-DOJO/**)",
+      "Read(/C:\\Users\\andre\\Documents\\SQL-DOJO/**)",
+      "Read(/C:\\Users\\andre\\Documents\\SQL-DOJO/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

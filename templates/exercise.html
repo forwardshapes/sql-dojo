@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL DOJO - {{ exercise.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="main-layout">
+            <div class="left-panel">
+                <div class="exercise-header">
+                    <h1>Exercise {{ exercise_id }}: {{ exercise.title }}</h1>
+                </div>
+                
+                <div class="exercise-content">
+                    <h3>Question</h3>
+                    <p>{{ exercise.question }}</p>
+                    
+                    {% for table in exercise.tables %}
+                    <h3>Table: {{ table.name }}</h3>
+                    <table class="example-table">
+                        <tr>
+                            {% for key in table.data[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                        {% for row in table.data %}
+                        <tr>
+                            {% for value in row.values() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <div class="input-section">
+                    <h3>Input</h3>
+                    <textarea id="sql-query" placeholder="SELECT * FROM users;" autofocus></textarea>
+                    <button id="check-answer" class="check-button">Submit</button>
+                    <div id="result-message" class="result-message hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('check-answer').addEventListener('click', async function() {
+            const query = document.getElementById('sql-query').value.trim();
+            const button = this;
+            const resultDiv = document.getElementById('result-message');
+            
+            if (!query) {
+                showResult('Please enter a SQL query.', false);
+                return;
+            }
+            
+            // Show loading state
+            button.textContent = 'Checking...';
+            button.disabled = true;
+            resultDiv.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/check-sql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        query: query,
+                        exercise_id: "{{ exercise_id }}"
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(data.message, data.correct);
+                } else {
+                    showResult(data.message, false);
+                }
+                
+            } catch (error) {
+                showResult('Error connecting to server. Please try again.', false);
+            }
+            
+            // Reset button
+            button.textContent = 'Submit';
+            button.disabled = false;
+        });
+        
+        function showResult(message, isCorrect) {
+            const resultDiv = document.getElementById('result-message');
+            resultDiv.textContent = message;
+            resultDiv.className = `result-message ${isCorrect ? 'correct' : 'incorrect'}`;
+        }
+    </script>
+</body>
+</html>
