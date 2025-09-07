@@ -73,7 +73,7 @@
                     },
                     body: JSON.stringify({ 
                         query: query,
-                        exercise_id: "{{ exercise_id }}"
+                        exercise_id: parseInt("{{ exercise_id }}")
                     })
                 });
                 
