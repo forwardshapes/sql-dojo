@@ -16,7 +16,8 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    exercises = get_all_exercises()
+    return render_template('index.html', exercises=exercises)
 
 @app.route('/exercise/<int:exercise_id>')
 def exercise(exercise_id):
