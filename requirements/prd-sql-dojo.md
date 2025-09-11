@@ -1,7 +1,7 @@
 # PRD: SQL Dojo
 
 Created: Sep 8, 2025  
-Last Updated: Sep 8, 2025
+Last Updated: Sep 10, 2025
 
 # Overview
 
@@ -15,7 +15,7 @@ The app will have a freemium business model. A few exercises will be available f
 
 ## Summary
 
-* 100+ SQL exercises of varying difficulty  
+* Minimum 100 SQL exercises of varying difficulty  
 * Gemini LLM API validation for user’s answers for each exercise (no stored solutions or SQL engine or rendering needed)  
 * Exercise listing table with filtering capabilities (filter by difficulty, category, completion status) and real-time search capabilities  
 * Individual progress tracking of the user’s status for each exercise (Not Started, Solved, Error)  

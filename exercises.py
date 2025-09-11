@@ -100,37 +100,115 @@ CHINOOK_TABLES = {
 
 EXERCISES = {
     1: {
-        "title": "Albums by Artist",
-        "category": "Joins & Aggregation",
-        "question": "Write a query to count how many albums each artist has. The output should show the artist name and album count, sorted in ascending order by artist name.",
-        "table_refs": ["artist", "album"],
+        "title": "Artist Names",
+        "category": "Basic SELECT Operations",
+        "difficulty": "beginner",
+        "question": "As a Product Manager, you want to explore the music catalog to understand what artists are available. Write a query to retrieve all artist names from the artist table. This will help you get familiar with basic data retrieval before diving into more complex analysis.",
+        "table_refs": ["artist"],
         "validation_prompt": """
         You are a SQL validator. A user is trying to solve this exercise:
         
-        Exercise: "Write a query to count how many albums each artist has. The output should show the artist name and album count, sorted in ascending order by artist name."
+        Exercise: "Write a query to retrieve all artist names from the artist table."
         
-        Table schemas:
+        Table schema:
         - artist table with columns: artist_id, name
-        - album table with columns: album_id, title, artist_id
         
-        Sample data shows artists like AC/DC, Accept, Aerosmith, etc. and their associated albums.
+        Sample data shows artists like AC/DC, Accept, Aerosmith, Alanis Morissette, etc.
         
         User's SQL query: {user_query}
         
         Please evaluate if this query correctly solves the exercise. The correct solution should:
-        1. JOIN the artists and albums tables on ArtistId
-        2. GROUP BY artist name or artist id
-        3. COUNT the albums for each artist
-        4. SELECT both the artist name and the count
-        5. Sort the results in ASCENDING order by artist name (NOT descending)
-        6. Use proper SQL syntax
+        1. SELECT the name column from the artist table
+        2. Use proper SQL syntax with SELECT and FROM clauses
+        3. Reference the correct table name (artist)
+        4. Reference the correct column name (name, not artist_name)
         
         IMPORTANT: Pay special attention to:
-        - The query must include a JOIN between artist and album tables on artist_id
-        - The output must show artist NAME (not just ID) and album count
-        - Results MUST be sorted in ascending order by artist name
-        - The query should handle artists with multiple albums correctly
-        - Column names are lowercase with underscores (artist_id, not ArtistId)
+        - The query should SELECT only the name column (not artist_id or other columns)
+        - Table name is "artist" (lowercase, singular)
+        - Column name is "name" (lowercase)
+        - No JOIN, WHERE, GROUP BY, or ORDER BY is required for this basic exercise
+        - Proper SQL syntax: SELECT column FROM table
+        
+        Respond with exactly one of these formats:
+        - If correct: "CORRECT: [brief explanation of why it's correct]"
+        - If incorrect: "INCORRECT: [brief explanation of what's wrong and hint for improvement]"
+        
+        Keep your response concise and educational.
+        """
+    },
+    2: {
+        "title": "Album Details",
+        "category": "Basic SELECT Operations",
+        "difficulty": "beginner",
+        "question": "As a Product Manager analyzing the music catalog, you need to understand the relationship between albums and artists. Write a query to retrieve the album title and artist_id from the album table. This will help you see which albums belong to which artists.",
+        "table_refs": ["album"],
+        "validation_prompt": """
+        You are a SQL validator. A user is trying to solve this exercise:
+        
+        Exercise: "Write a query to retrieve the album title and artist_id from the album table."
+        
+        Table schema:
+        - album table with columns: album_id, title, artist_id
+        
+        Sample data shows albums like "For Those About To Rock We Salute You", "Balls to the Wall", etc. with their corresponding artist_id values.
+        
+        User's SQL query: {user_query}
+        
+        Please evaluate if this query correctly solves the exercise. The correct solution should:
+        1. SELECT exactly two columns: title and artist_id from the album table
+        2. Use proper SQL syntax with SELECT and FROM clauses
+        3. Reference the correct table name (album)
+        4. Reference the correct column names (title and artist_id)
+        5. Include both columns in the SELECT statement
+        
+        IMPORTANT: Pay special attention to:
+        - The query should SELECT exactly title and artist_id columns (not album_id or other columns)
+        - Table name is "album" (lowercase, singular)
+        - Column names are "title" and "artist_id" (lowercase with underscore)
+        - Both columns must be included in the SELECT statement
+        - No JOIN, WHERE, GROUP BY, or ORDER BY is required for this basic exercise
+        - Proper SQL syntax: SELECT column1, column2 FROM table
+        
+        Respond with exactly one of these formats:
+        - If correct: "CORRECT: [brief explanation of why it's correct]"
+        - If incorrect: "INCORRECT: [brief explanation of what's wrong and hint for improvement]"
+        
+        Keep your response concise and educational.
+        """
+    },
+    3: {
+        "title": "Track Information",
+        "category": "Basic SELECT Operations",
+        "difficulty": "beginner",
+        "question": "As a Product Manager, you want to analyze track performance and pricing. Write a query to retrieve the track name, duration (milliseconds), and unit_price from the track table. This data will help you understand track characteristics for business analysis.",
+        "table_refs": ["track"],
+        "validation_prompt": """
+        You are a SQL validator. A user is trying to solve this exercise:
+        
+        Exercise: "Write a query to retrieve the track name, duration (milliseconds), and unit_price from the track table."
+        
+        Table schema:
+        - track table with columns: track_id, name, album_id, media_type_id, genre_id, composer, milliseconds, bytes, unit_price
+        
+        Sample data shows tracks with names, durations in milliseconds, and prices like 0.99.
+        
+        User's SQL query: {user_query}
+        
+        Please evaluate if this query correctly solves the exercise. The correct solution should:
+        1. SELECT exactly three columns: name, milliseconds, and unit_price from the track table
+        2. Use proper SQL syntax with SELECT and FROM clauses
+        3. Reference the correct table name (track)
+        4. Reference the correct column names (name, milliseconds, unit_price)
+        5. Include all three columns in the SELECT statement
+        
+        IMPORTANT: Pay special attention to:
+        - The query should SELECT exactly name, milliseconds, and unit_price columns
+        - Table name is "track" (lowercase, singular)
+        - Column names are "name", "milliseconds", and "unit_price" (lowercase with underscores)
+        - All three columns must be included in the SELECT statement
+        - No JOIN, WHERE, GROUP BY, or ORDER BY is required for this basic exercise
+        - Proper SQL syntax: SELECT column1, column2, column3 FROM table
         
         Respond with exactly one of these formats:
         - If correct: "CORRECT: [brief explanation of why it's correct]"
