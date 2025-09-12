@@ -95,7 +95,6 @@ Following PRD code values:
 ## Future Enhancements
 
 ### Suggested Additions
-- **Difficulty field**: Add optional `difficulty` field for future filtering capabilities
 - **Prerequisites**: Consider adding `prerequisites` array for exercise dependencies
 - **Hints system**: Add progressive hints for stuck users
 
