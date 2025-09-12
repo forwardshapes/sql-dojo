@@ -56,7 +56,7 @@ The app will have a freemium business model. A few exercises will be available f
 
 ## Architecture Considerations
 
-* Handles 100+ exercises and 1000+ concurrent users through normalized data structure and efficient caching strategies      
+* Easily supports a minimum of 100+ exercises and 1000+ concurrent users through normalized data structure and efficient caching strategies
 * Scalable exercises data structure and metadata  
 * Reusable data tables (avoid duplication across exercises)  
 * Generic \+ exercise-specific validation prompts  

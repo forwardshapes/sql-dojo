@@ -253,8 +253,15 @@ def check_sql():
         prompt = exercise_data['validation_prompt'].format(user_query=sanitized_query)
         
         # Send to Gemini
-        response = model.generate_content(prompt)
-        result_text = response.text.strip()
+        try:
+            response = model.generate_content(prompt)
+            result_text = response.text.strip()
+        except Exception as gemini_error:
+            # Handle Gemini API errors (quota exceeded, network issues, etc.)
+            return jsonify({
+                'success': False,
+                'message': 'Error validating query. Please try again later.'
+            })
         
         # Step 3: Parse response with security validation
         parsed_response = parse_ai_response(result_text)
@@ -262,9 +269,10 @@ def check_sql():
         return jsonify(parsed_response)
         
     except Exception as e:
+        # Handle any other unexpected errors
         return jsonify({
             'success': False,
-            'message': f'Error validating query: {str(e)}'
+            'message': 'Error validating query. Please try again later.'
         })
 
 if __name__ == '__main__':
