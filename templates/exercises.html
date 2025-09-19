@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL DOJO - Practice SQL Queries</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="index-container">
+        <div class="index-header">
+            <h1>SQL Practice Questions</h1>
+        </div>
+
+        <div class="exercises-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exercise</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exercise_id, exercise in exercises.items() %}
+                    <tr onclick="window.location.href='/exercise/{{ exercise_id }}'">
+                        <td class="exercise-number">{{ exercise_id }}</td>
+                        <td class="exercise-title">{{ exercise.title }}</td>
+                        <td class="exercise-category">{{ exercise.category }}</td>
+                        <td class="exercise-status">
+                            <span class="status-not-started">—</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

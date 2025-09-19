@@ -1,21 +1,21 @@
 <header class="app-header">
     <div class="header-container">
         <div class="header-left">
-            <a href="{{ url_for('index') }}" class="logo">SQL Dojo</a>
+            <a href="{{ url_for('exercises') }}" class="logo">SQL Dojo</a>
         </div>
         
         <div class="header-right">
             <div class="user-dropdown">
                 <div class="user-info">
-                    <div class="user-avatar">A</div>
-                    <span class="username">andrei</span>
+                    <div class="user-avatar">{{ current_user.avatar_letter if current_user else 'U' }}</div>
+                    <span class="username">{{ current_user.username if current_user else 'User' }}</span>
                     <svg class="dropdown-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
                         <path d="M6 9L2 5H10L6 9Z" fill="currentColor"/>
                     </svg>
                 </div>
                 <div class="dropdown-menu">
                     <a href="#" class="dropdown-item">Account Settings</a>
-                    <a href="#" class="dropdown-item">Log out</a>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item">Log out</a>
                 </div>
             </div>
             <button class="premium-button">Premium</button>

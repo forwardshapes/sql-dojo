@@ -210,6 +210,7 @@ __marimo__/
 .ipynb_checkpoints/
 *.pyc
 .venv/
+.mcp.json
 
 # Database files - keep Chinook DB out of version control
 data/
