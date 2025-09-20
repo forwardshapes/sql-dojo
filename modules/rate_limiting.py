@@ -1,7 +1,7 @@
 """
 Rate limiting functions for SQL Dojo - User tier detection and rate limits
 """
-from flask import jsonify
+from flask import jsonify, request
 
 
 def get_user_tier(request):
@@ -42,7 +42,7 @@ def get_rate_limits_for_user(user_tier):
         }
 
 
-def dynamic_rate_limit(request):
+def dynamic_rate_limit():
     """Dynamic rate limit based on user tier"""
     user_tier = get_user_tier(request)
     limits = get_rate_limits_for_user(user_tier)
