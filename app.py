@@ -5,7 +5,7 @@ from flask_limiter.util import get_remote_address
 import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
-from modules.exercises import get_exercise, get_all_exercises
+from modules.exercises import get_exercise, get_all_exercises, build_validation_prompt
 from modules.auth import login_required, inject_user_context, create_session
 from modules.security import sanitize_user_query, validate_sql_input
 from modules.ai_validation import validate_sql_with_ai, parse_ai_response
@@ -159,8 +159,9 @@ def check_sql():
                 'message': 'Exercise not found.'
             })
         
-        # Create validation prompt from exercise data with sanitized query
-        prompt = exercise_data['validation_prompt'].format(user_query=sanitized_query)
+        # Build validation prompt from exercise data with sanitized query
+        prompt_template = build_validation_prompt(exercise_data)
+        prompt = prompt_template.format(user_query=sanitized_query)
         
         # Send to Gemini
         try:

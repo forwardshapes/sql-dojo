@@ -50,7 +50,7 @@ def parse_ai_response(response):
         message = f'🎉 {message}'
 
     # Sanitize the message to prevent any injected content from being returned
-    message = message[:200]  # Limit message length
+    message = message[:300]  # Limit message length
 
     return {
         'success': True,
