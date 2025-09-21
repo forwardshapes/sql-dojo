@@ -186,4 +186,8 @@ def check_sql():
         })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Cloud Run provides PORT environment variable
+    port = int(os.getenv('PORT', 8080))
+    # Disable debug mode in production
+    debug_mode = os.getenv('FLASK_ENV') == 'development'
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)

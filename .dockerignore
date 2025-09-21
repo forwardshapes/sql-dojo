@@ -1,0 +1,43 @@
+# Exclude development files
+.env
+.env.local
+.env.*.local
+
+# Exclude git files
+.git
+.gitignore
+
+# Exclude Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Exclude documentation and notes
+README.md
+session-notes/
+requirements/
+*.md
+
+# Exclude development dependencies
+.venv/
+venv/
+
+# Exclude IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Exclude OS files
+.DS_Store
+Thumbs.db
+
+# Exclude test files (if any)
+tests/
+*_test.py
+test_*.py
+
+# Exclude lock files that may cause conflicts
+package-lock.json
+yarn.lock
