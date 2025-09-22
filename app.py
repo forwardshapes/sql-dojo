@@ -10,12 +10,19 @@ from modules.auth import login_required, inject_user_context, create_session
 from modules.security import sanitize_user_query, validate_sql_input
 from modules.ai_validation import validate_sql_with_ai, parse_ai_response
 from modules.rate_limiting import dynamic_rate_limit, get_rate_limit_info, handle_rate_limit_exceeded
+from modules.logging_config import setup_logging, get_auth_logger, get_app_logger, log_auth_event, log_supabase_event, log_error_with_context
+from modules.auth_service import AuthenticationService
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-key-change-in-production')
 CORS(app)
+
+# Initialize logging after Flask app creation
+setup_logging()
+auth_logger = get_auth_logger()
+app_logger = get_app_logger()
 
 # Initialize rate limiter
 limiter = Limiter(
@@ -33,6 +40,9 @@ if not supabase_url or not supabase_key:
     raise ValueError("Missing required database configuration")
 
 supabase: Client = create_client(supabase_url, supabase_key)
+
+# Initialize authentication service
+auth_service = AuthenticationService(supabase)
 
 # Context processor to make user data available to all templates
 @app.context_processor
@@ -56,48 +66,24 @@ def login():
     email = request.form.get('email')
     password = request.form.get('password')
 
-    if not email or not password:
-        return render_template('index.html', error='Please enter both email and password')
+    # Use authentication service for clean, logged authentication
+    auth_result = auth_service.authenticate_user(
+        email=email,
+        password=password,
+        user_agent=request.headers.get('User-Agent', ''),
+        ip_address=request.remote_addr
+    )
 
-    try:
-        # Attempt to sign in with Supabase Auth
-        auth_response = supabase.auth.sign_in_with_password({
-            "email": email,
-            "password": password
-        })
-
-        if auth_response.user:
-            # Check if user exists in our users table
-            user_id = auth_response.user.id
-            existing_user = supabase.table('users').select('*').eq('id', user_id).execute()
-
-            if not existing_user.data:
-                # User authenticated with Supabase but doesn't exist in our system
-                return render_template('index.html', error='Account not found. Please contact support.')
-
-            # Get user data for session caching
-            user_record = existing_user.data[0]
-
-            # Update last login for existing user
-            supabase.table('users').update({
-                'last_login': 'now()'
-            }).eq('id', user_id).execute()
-
-            # Create secure session with timeout tracking
-            create_session(
-                user_id=user_id,
-                user_email=auth_response.user.email,
-                username=user_record.get('username', 'User')
-            )
-
-            # Login successful - redirect to exercises
-            return redirect(url_for('exercises'))
-        else:
-            return render_template('index.html', error='Invalid email or password')
-
-    except Exception as e:
-        # Handle authentication errors (invalid credentials, etc.)
-        return render_template('index.html', error='Invalid email or password')
+    if auth_result.success:
+        # Create secure session with timeout tracking
+        create_session(
+            user_id=auth_result.user_id,
+            user_email=auth_result.email,
+            username=auth_result.username
+        )
+        return redirect(url_for('exercises'))
+    else:
+        return render_template('index.html', error=auth_result.error_message)
 
 @app.route('/logout')
 @login_required
@@ -186,8 +172,8 @@ def check_sql():
         })
 
 if __name__ == '__main__':
-    # Cloud Run provides PORT environment variable
-    port = int(os.getenv('PORT', 8080))
-    # Disable debug mode in production
+    # Cloud Run provides PORT environment variable, use 5000 for local dev
+    port = int(os.getenv('PORT', 5000))
+    # Enable debug mode for local development or when FLASK_ENV=development
     debug_mode = os.getenv('FLASK_ENV') == 'development'
     app.run(host='0.0.0.0', port=port, debug=debug_mode)
