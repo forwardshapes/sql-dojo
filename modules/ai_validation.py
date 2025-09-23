@@ -5,30 +5,12 @@ import google.generativeai as genai
 import os
 import time
 from dotenv import load_dotenv
-from modules.logging_config import get_app_logger
-
 load_dotenv()
-
-logger = get_app_logger()
 
 # Validate and configure Gemini API
 api_key = os.getenv('GEMINI_API_KEY')
 
-# Log environment validation if debug is enabled
-if os.getenv('GEMINI_DEBUG_ENABLED', 'false').lower() == 'true':
-    logger.info("Gemini environment validation", extra={'extra_data': {
-        'event_type': 'gemini_setup',
-        'event': 'environment_validation',
-        'api_key_present': bool(api_key),
-        'api_key_length': len(api_key) if api_key else 0,
-        'api_key_prefix': api_key[:8] + '...' if api_key and len(api_key) > 8 else '[MISSING]'
-    }})
-
 if not api_key:
-    logger.error("Missing GEMINI_API_KEY environment variable", extra={'extra_data': {
-        'event_type': 'gemini_setup',
-        'event': 'missing_api_key'
-    }})
     raise ValueError("GEMINI_API_KEY environment variable is required")
 
 genai.configure(api_key=api_key)
@@ -36,20 +18,7 @@ model = genai.GenerativeModel('gemini-2.0-flash-lite')
 
 
 def validate_sql_with_ai(prompt):
-    """Send SQL validation prompt to Gemini AI with detailed logging and timeout"""
-    request_id = f"gemini_{hash(prompt) % 10000:04d}"
-
-    # Log request start if debug enabled
-    if os.getenv('GEMINI_DEBUG_ENABLED', 'false').lower() == 'true':
-        logger.info("Gemini API request starting", extra={'extra_data': {
-            'event_type': 'gemini_api',
-            'event': 'request_start',
-            'request_id': request_id,
-            'prompt_length': len(prompt),
-            'model': 'gemini-2.0-flash-lite'
-        }})
-
-    start_time = time.time()
+    """Send SQL validation prompt to Gemini AI with timeout"""
 
     try:
         # Add timeout to prevent hanging
@@ -72,36 +41,9 @@ def validate_sql_with_ai(prompt):
             ]
         )
 
-        duration = time.time() - start_time
-
-        # Log successful response
-        if os.getenv('GEMINI_DEBUG_ENABLED', 'false').lower() == 'true':
-            logger.info("Gemini API request completed", extra={'extra_data': {
-                'event_type': 'gemini_api',
-                'event': 'request_success',
-                'request_id': request_id,
-                'duration_seconds': round(duration, 3),
-                'response_length': len(response.text) if response.text else 0,
-                'response_preview': response.text[:100] + '...' if response.text and len(response.text) > 100 else response.text
-            }})
-
         return response.text.strip() if response.text else ""
 
     except Exception as gemini_error:
-        duration = time.time() - start_time
-
-        # Log detailed error information
-        if os.getenv('GEMINI_DEBUG_ENABLED', 'false').lower() == 'true':
-            logger.error("Gemini API request failed", extra={'extra_data': {
-                'event_type': 'gemini_api',
-                'event': 'request_error',
-                'request_id': request_id,
-                'duration_seconds': round(duration, 3),
-                'error_type': type(gemini_error).__name__,
-                'error_message': str(gemini_error),
-                'error_details': str(gemini_error)
-            }}, exc_info=True)
-
         # Handle Gemini API errors (quota exceeded, network issues, etc.)
         raise Exception(f"Gemini API error: {type(gemini_error).__name__} - {str(gemini_error)}")
 

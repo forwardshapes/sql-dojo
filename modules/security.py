@@ -3,6 +3,10 @@ Security functions for SQL Dojo - Input validation and sanitization
 """
 import re
 
+# Configuration constants for input size limits
+MAX_QUERY_LENGTH = 1000  # Maximum SQL query length in characters
+MAX_REQUEST_SIZE = 10240  # Maximum request body size in bytes (10KB)
+
 
 def sanitize_user_query(query):
     """Sanitize user input to prevent prompt injection attacks"""
@@ -26,8 +30,8 @@ def sanitize_user_query(query):
         query = re.sub(pattern, '', query, flags=re.IGNORECASE)
 
     # Limit length to reasonable SQL query size
-    if len(query) > 500:
-        query = query[:500]
+    if len(query) > MAX_QUERY_LENGTH:
+        query = query[:MAX_QUERY_LENGTH]
 
     return query.strip()
 
@@ -63,7 +67,7 @@ def validate_sql_input(user_query):
         return False, "Query must start with SELECT statement"
 
     # Check for reasonable length
-    if len(user_query) > 500:
-        return False, "Query is too long (maximum 500 characters)"
+    if len(user_query) > MAX_QUERY_LENGTH:
+        return False, "Query is too long"
 
     return True, "Valid"

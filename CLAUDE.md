@@ -21,8 +21,6 @@ The app runs on port 5000 with debug mode enabled.
 
 ### Production Environment Variables
 - `GEMINI_API_KEY` - Required: Google Gemini API key for SQL validation
-- `GEMINI_DEBUG_ENABLED=true` - Optional: Enable detailed logging for SQL validation and Gemini API calls (for production troubleshooting)
-- `AUTH_DEBUG_ENABLED=true` - Optional: Enable detailed authentication logging
 - `FLASK_ENV=development` - Optional: Enable debug mode and pretty-printed logs
 
 ### Development Tool Usage
