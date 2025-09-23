@@ -11,6 +11,7 @@ from modules.security import sanitize_user_query, validate_sql_input
 from modules.ai_validation import validate_sql_with_ai, parse_ai_response
 from modules.rate_limiting import dynamic_rate_limit, get_rate_limit_info, handle_rate_limit_exceeded
 from modules.logging_config import setup_logging, get_auth_logger, get_app_logger, log_auth_event, log_supabase_event, log_error_with_context
+from modules.sql_validation_logger import SQLValidationLogger
 from modules.auth_service import AuthenticationService
 
 load_dotenv()
@@ -115,61 +116,80 @@ def rate_limit_exceeded(e):
 @login_required
 @limiter.limit(dynamic_rate_limit)
 def check_sql():
-    try:
-        data = request.get_json()
-        user_query = data.get('query', '').strip()
-        exercise_id = data.get('exercise_id', 1)
-        
-        if not user_query:
-            return jsonify({
-                'success': False,
-                'message': 'Please enter a SQL query.'
-            })
-        
-        # Step 1: Validate input for security threats
-        is_valid, validation_message = validate_sql_input(user_query)
-        if not is_valid:
-            return jsonify({
-                'success': False,
-                'message': validation_message
-            })
-        
-        # Step 2: Sanitize the user query
-        sanitized_query = sanitize_user_query(user_query)
-        
-        # Get exercise data
-        exercise_data = get_exercise(exercise_id)
-        if not exercise_data:
-            return jsonify({
-                'success': False,
-                'message': 'Exercise not found.'
-            })
-        
-        # Build validation prompt from exercise data with sanitized query
-        prompt_template = build_validation_prompt(exercise_data)
-        prompt = prompt_template.format(user_query=sanitized_query)
-        
-        # Send to Gemini
+    with SQLValidationLogger(request) as logger:
         try:
-            result_text = validate_sql_with_ai(prompt)
-        except Exception as gemini_error:
-            # Handle Gemini API errors (quota exceeded, network issues, etc.)
+            data = request.get_json()
+            user_query = data.get('query', '').strip()
+            exercise_id = data.get('exercise_id', 1)
+
+            logger.log_step('data_parsed', exercise_id=exercise_id, query_length=len(user_query))
+
+            if not user_query:
+                logger.log_step('validation_failed', reason='empty_query')
+                return jsonify({
+                    'success': False,
+                    'message': 'Please enter a SQL query.'
+                })
+
+            # Step 1: Validate input for security threats
+            logger.log_step('security_validation_start')
+            is_valid, validation_message = validate_sql_input(user_query)
+            if not is_valid:
+                logger.log_step('security_validation_failed', validation_message=validation_message)
+                return jsonify({
+                    'success': False,
+                    'message': validation_message
+                })
+
+            # Step 2: Sanitize the user query
+            logger.log_step('query_sanitization')
+            sanitized_query = sanitize_user_query(user_query)
+
+            # Get exercise data
+            logger.log_step('exercise_data_retrieval', exercise_id=exercise_id)
+            exercise_data = get_exercise(exercise_id)
+            if not exercise_data:
+                logger.log_step('exercise_not_found', exercise_id=exercise_id)
+                return jsonify({
+                    'success': False,
+                    'message': 'Exercise not found.'
+                })
+
+            # Build validation prompt from exercise data with sanitized query
+            logger.log_step('prompt_building')
+            prompt_template = build_validation_prompt(exercise_data)
+            prompt = prompt_template.format(user_query=sanitized_query)
+
+            # Send to Gemini
+            logger.log_step('gemini_api_start', prompt_length=len(prompt))
+            try:
+                result_text = validate_sql_with_ai(prompt)
+                logger.log_step('gemini_api_success', response_length=len(result_text) if result_text else 0)
+            except Exception as gemini_error:
+                # Handle Gemini API errors (quota exceeded, network issues, etc.)
+                logger.log_error('gemini_api_error', gemini_error)
+                return jsonify({
+                    'success': False,
+                    'message': 'Error validating query. Please try again later.'
+                })
+
+            # Step 3: Parse response with security validation
+            logger.log_step('response_parsing')
+            parsed_response = parse_ai_response(result_text)
+
+            logger.log_step('request_complete',
+                          success=parsed_response.get('success', False),
+                          correct=parsed_response.get('correct', False))
+
+            return jsonify(parsed_response)
+
+        except Exception as e:
+            # Handle any other unexpected errors
+            logger.log_error('unexpected_error', e)
             return jsonify({
                 'success': False,
                 'message': 'Error validating query. Please try again later.'
             })
-        
-        # Step 3: Parse response with security validation
-        parsed_response = parse_ai_response(result_text)
-        
-        return jsonify(parsed_response)
-        
-    except Exception as e:
-        # Handle any other unexpected errors
-        return jsonify({
-            'success': False,
-            'message': 'Error validating query. Please try again later.'
-        })
 
 if __name__ == '__main__':
     # Cloud Run provides PORT environment variable, use 5000 for local dev

@@ -19,6 +19,12 @@ The app runs on port 5000 with debug mode enabled.
 2. Create `.env` file with `GEMINI_API_KEY=your_api_key_here`
 3. The app requires a valid Google Gemini API key to function
 
+### Production Environment Variables
+- `GEMINI_API_KEY` - Required: Google Gemini API key for SQL validation
+- `GEMINI_DEBUG_ENABLED=true` - Optional: Enable detailed logging for SQL validation and Gemini API calls (for production troubleshooting)
+- `AUTH_DEBUG_ENABLED=true` - Optional: Enable detailed authentication logging
+- `FLASK_ENV=development` - Optional: Enable debug mode and pretty-printed logs
+
 ### Development Tool Usage
 - Always use `uv` to manage dependencies instead of `pip`
 - Use `uv run` to execute Python files instead of `python` directly
