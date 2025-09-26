@@ -1,1 +1,2 @@
-See Claude.md file
+See [CLAUDE.md](https://github.com/forwardshapes/sql-dojo/blob/main/CLAUDE.md)
+
