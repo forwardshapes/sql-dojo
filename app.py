@@ -1,23 +1,18 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import os
 from dotenv import load_dotenv
-from supabase import create_client, Client
 from modules.exercises import get_exercise, get_all_exercises, build_validation_prompt
-from modules.auth import login_required, inject_user_context, create_session
 from modules.security import sanitize_user_query, validate_sql_input, MAX_REQUEST_SIZE
 from modules.ai_validation import validate_sql_with_ai, parse_ai_response
 from modules.rate_limiting import dynamic_rate_limit, get_rate_limit_info, handle_rate_limit_exceeded
-from modules.auth_service import AuthenticationService
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-key-change-in-production')
 CORS(app)
-
 
 # Initialize rate limiter
 limiter = Limiter(
@@ -27,68 +22,12 @@ limiter = Limiter(
 )
 
 
-# Configure Supabase client
-supabase_url = os.getenv('SUPABASE_URL')
-supabase_key = os.getenv('SUPABASE_PUBLISHABLE_KEY')
-
-if not supabase_url or not supabase_key:
-    raise ValueError("Missing required database configuration")
-
-supabase: Client = create_client(supabase_url, supabase_key)
-
-# Initialize authentication service
-auth_service = AuthenticationService(supabase)
-
-# Context processor to make user data available to all templates
-@app.context_processor
-def inject_user_data():
-    current_user = inject_user_context()
-    return {'current_user': current_user}
-
-
 @app.route('/')
 def index():
-    return render_template('index.html')
-
-@app.route('/exercises')
-@login_required
-def exercises():
     exercises = get_all_exercises()
     return render_template('exercises.html', exercises=exercises)
 
-@app.route('/login', methods=['POST'])
-def login():
-    email = request.form.get('email')
-    password = request.form.get('password')
-
-    # Use authentication service for clean, logged authentication
-    auth_result = auth_service.authenticate_user(
-        email=email,
-        password=password,
-        user_agent=request.headers.get('User-Agent', ''),
-        ip_address=request.remote_addr
-    )
-
-    if auth_result.success:
-        # Create secure session with timeout tracking
-        create_session(
-            user_id=auth_result.user_id,
-            user_email=auth_result.email,
-            username=auth_result.username
-        )
-        return redirect(url_for('exercises'))
-    else:
-        return render_template('index.html', error=auth_result.error_message)
-
-@app.route('/logout')
-@login_required
-def logout():
-    # Clear the session
-    session.clear()
-    return redirect(url_for('index'))
-
 @app.route('/exercise/<int:exercise_id>')
-@login_required
 def exercise(exercise_id):
     exercise_data = get_exercise(exercise_id)
     if not exercise_data:
@@ -107,7 +46,6 @@ def rate_limit_exceeded(e):
     return handle_rate_limit_exceeded(e, request)
 
 @app.route('/check-sql', methods=['POST'])
-@login_required
 @limiter.limit(dynamic_rate_limit)
 def check_sql():
     try:
