@@ -211,7 +211,7 @@ __marimo__/
 *.pyc
 .venv/
 .mcp.json
-.claude/
+.claude
 
 # Database files - keep Chinook DB out of version control
 data/
